@@ -1,5 +1,6 @@
 
 
+
 const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover = false) => {
 	const input = document.querySelector(selector);
 	const lengthMask = mask.length;
@@ -69,6 +70,8 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 			}
 			indexValue = decrementIndexValue(indexValue);
 			cursorPosition = indexValue;
+			console.log('	cursorPosition-', cursorPosition);
+			console.log('	indexValue-', indexValue);
 			valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholder);
 			valueUser = deleteLastCharacter(valueUser, numberPlaceholder);
 			e.target.value = valueArrMask.join('');
