@@ -62,6 +62,7 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 				indexValue = decrementIndexValue(indexValue);
 				valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholder);
 				cursorPosition = indexValue;
+				e.target.value = valueArrMask.join('');
 				setCursorPosition(e.target, cursorPosition);
 				valueUser = deleteLastCharacter(valueUser);
 				return;
