@@ -63,7 +63,7 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 				indexValue = decrementIndexValue(indexValue);
 				valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholder);
 				cursorPosition = indexValue;
-				setInterval(() => {
+				setTimeout(() => {
 					e.target.value = valueArrMask.join('');
 					setCursorPosition(e.target, cursorPosition);
 				}, 0);
