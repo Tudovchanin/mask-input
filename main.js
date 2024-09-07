@@ -1,9 +1,9 @@
 
 
-
-const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover = false) => {
+const phoneNumberMask = (positionStart, mask, arrSymbols , selector, hover = false) => {
 	const input = document.querySelector(selector);
 	const lengthMask = mask.length;
+	const numberPlaceholderArr = mask.split('');
 	let valueArrMask = mask.split('');
 	let valueUser = '';
 	let indexValue = positionStart;
@@ -34,12 +34,12 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 				setCursorPosition(e.target, cursorPosition);
 				return;
 			}
-			if (valueArrMask[indexValue - 1] === ')' || valueArrMask[indexValue - 1] === '(' || valueArrMask[indexValue - 1] === '-' || valueArrMask[indexValue - 1] === ' ') {
+			if (arrSymbols.includes(valueArrMask[indexValue - 1])  || valueArrMask[indexValue - 1] === ' ') {
 				indexValue = decrementIndexValue(indexValue);
 			}
 
 			indexValue = decrementIndexValue(indexValue);
-			valueArrMask = deleteNumberPhone(valueArrMask, indexValue, numberPlaceholder);
+			valueArrMask = deleteNumberPhone(valueArrMask, indexValue, numberPlaceholderArr);
 			valueUser = deleteLastCharacter(valueUser);
 			e.target.value = valueArrMask.join('');
 			setCursorPosition(e.target, cursorPosition);
@@ -58,10 +58,10 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 
 		if (key === 'Backspace' && indexValue > positionStart) {
 
-			if (valueArrMask[indexValue - 1] === ')' || valueArrMask[indexValue - 1] === '(' || valueArrMask[indexValue - 1] === '-' || valueArrMask[indexValue - 1] === ' ') {
+			if (arrSymbols.includes(valueArrMask[indexValue - 1]) || valueArrMask[indexValue - 1] === ' ') {
 				indexValue = decrementIndexValue(indexValue);
 				indexValue = decrementIndexValue(indexValue);
-				valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholder);
+				valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholderArr);
 				cursorPosition = indexValue;
 				setTimeout(() => {
 					e.target.value = valueArrMask.join('');
@@ -74,10 +74,8 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 			}
 			indexValue = decrementIndexValue(indexValue);
 			cursorPosition = indexValue;
-			console.log('	cursorPosition-', cursorPosition);
-			console.log('	indexValue-', indexValue);
-			valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholder);
-			valueUser = deleteLastCharacter(valueUser, numberPlaceholder);
+			valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholderArr);
+			valueUser = deleteLastCharacter(valueUser, numberPlaceholderArr);
 			e.target.value = valueArrMask.join('');
 			setCursorPosition(e.target, cursorPosition);
 			return;
@@ -91,7 +89,7 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 			setCursorPosition(e.target, positionStart)
 		}
 		if (key >= '0' && key <= '9') {
-			if (valueArrMask[indexValue] === ')' || valueArrMask[indexValue] === '(' || valueArrMask[indexValue] === '-' || valueArrMask[indexValue] === ' ') {
+			if (arrSymbols.includes(valueArrMask[indexValue]) || valueArrMask[indexValue] === ' ') {
 				indexValue = incrementIndex(indexValue);
 			}
 			valueUser += e.key;
@@ -126,22 +124,22 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 		});
 	}
 
-	function backspaceNumberPhone(arr, cursorPosition, numberPlaceholder) {
+	function backspaceNumberPhone(arr, cursorPosition, numberPlaceholderArr) {
 		let maskArr = arr;
 		let arrUserData = maskArr.map((v, i, arr) => {
 			if (i === cursorPosition) {
-				arr[i] = numberPlaceholder;
+				arr[i] = numberPlaceholderArr[i];
 				return arr[i];
 			}
 			return v;
 		})
 		return arrUserData;
 	}
-	function deleteNumberPhone(arr, cursorPosition, numberPlaceholder) {
+	function deleteNumberPhone(arr, cursorPosition, numberPlaceholderArr) {
 		let maskArr = arr;
 		let arrUserData = maskArr.map((v, i, arr) => {
-			if (i >= cursorPosition && arr[i] !== '-' && arr[i] !== ')' && arr[i] !== '(' && arr[i] !== ' ') {
-				return arr[i] = numberPlaceholder;
+			if (i >= cursorPosition && arr[i] !== ' ' && !arrSymbols.includes(arr[i])) {
+				return arr[i] = numberPlaceholderArr[i];;
 			}
 			return v;
 		})
@@ -160,4 +158,4 @@ const phoneNumberMask = (positionStart, mask, numberPlaceholder, selector, hover
 		return str.slice(0, -1);
 	}
 }
-phoneNumberMask(3, '+7(___)___-__-__', '_', '.mask', true);//phoneNumberMask(стартовая позиция курсора, маска, заменяемый символ в маске, класс input к которому применяется маска,булево значение эффекта hover маски)
+phoneNumberMask(3, '+7(***)___-__-__', [')','(','-'],  '.mask', true);//phoneNumberMask(стартовая позиция курсора,, маска,  массив не заменяемых символов, класс input к которому применяется маска,булево значение эффекта hover маски)
