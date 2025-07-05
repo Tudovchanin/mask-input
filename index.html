@@ -1,17 +1,25 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mask input</title>
-</head>
-<body >
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Mask input</title>
+  </head>
+  <body>
+    <div id="bg" class="container">
+      <h1 class="title">Mask 28</h1>
 
-
-  <form style="margin-top: 100px;">
-    <input style="height: 40px; width: 400px; font-size: 20px;" id="mask-tel" type="text">
-  </form>
-  <script src="/main.js"></script>
-</body>
+      <form class="form">
+        <input
+          id="mask-tel"
+          class="form__mask"
+          type="text"
+          placeholder="+7(___)___-__-__"
+        />
+      </form>
+    </div>
+   
+    <script src="/main.js"></script>
+  </body>
 </html>
