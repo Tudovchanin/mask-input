@@ -1,161 +1,150 @@
 
+class InputMask {
+  inputFocus = false;
+  arrValueInputAndMask = '';
+  cursorPosition = 0
+  constructor(
+    startPosition,
+    maskString,
+    symbolsArrNotReplace,
+    elem,
+  ) {
+    this.positionStart = startPosition;
+    this.mask = maskString;
+    this.arrNotReplaceSymbols = symbolsArrNotReplace;
+    this.input = elem;
+  }
 
-const phoneNumberMask = (positionStart, mask, arrSymbols , selector, hover = false) => {
-	const input = document.querySelector(selector);
-	const lengthMask = mask.length;
-	const numberPlaceholderArr = mask.split('');
-	let valueArrMask = mask.split('');
-	let valueUser = '';
-	let indexValue = positionStart;
-	let cursorPosition = positionStart;
-	let inputFocus = false;
+  initMask (){
+    this.cursorPosition = this.positionStart;
+    this.arrValueInputAndMask = this.mask.split('');
+    this.input.addEventListener("focus", this.handleFocus);
+    this.input.addEventListener("blur", this.handleBlur);
+    this.input.addEventListener("input", this.handleInput);
+    this.input.addEventListener("click", this.handleClick);
+  }
+
+  handleFocus = () => {
+    this.inputFocus = true;
+    if (!this.input.value) {
+      this.input.value = this.mask;
+      this.setCursorPosition( this.positionStart);
+      return;
+    }
+    this.setCursorPosition(this.cursorPosition);
+  }
+  handleBlur = () => {
+    this.inputFocus = false;
+    if (this.input.value === this.mask) {
+      this.input.value = "";
+    }
+  }
+
+  handleClick = ()=> {
+    if (this.input.value === this.mask) {
+      this.setCursorPosition(this.positionStart);
+      return;
+    }
+    this.setCursorPosition(Math.max(this.positionStart, this.input.selectionEnd));
+  }
+
+  
+   handleInput = (e) => {
+    const typeInput = e.inputType;
+
+    // удаление значений input
+    if (
+      typeInput === "deleteContentBackward" ||
+      typeInput === "deleteContentForward"
+    ) {
+    
+      this.cursorPosition = this.input.selectionEnd;
+
+      // логика пропуска не заменяемых символов маски
+      if (
+        this.arrNotReplaceSymbols.includes(this.arrValueInputAndMask[this.cursorPosition]) ||
+        this.arrValueInputAndMask[this.cursorPosition] === " "
+      ) {
+        if (typeInput !== "deleteContentForward") {
+          this.cursorPosition--;
+        }
+      }
+
+      // логика возврата курсора, если ушел за positionStart
+      if (this.cursorPosition < this.positionStart) {
+        this.input.value = this.arrValueInputAndMask.join('');
+        this.setCursorPosition(this.positionStart);
+        return;
+      }
+
+      // замена символов маски 
+      this.arrValueInputAndMask[this.cursorPosition] = this.mask[this.cursorPosition];
+      this.input.value = this.arrValueInputAndMask.join('');
+      this.setCursorPosition(this.cursorPosition);
+      return;
+    }
+
+    // ОСТАНОВКА ЗАПОЛНЕНИЯ МАСКИ-
+    if (this.input.selectionEnd > this.arrValueInputAndMask.length) {
+      this.input.value = this.arrValueInputAndMask.join('');
+      return;
+    }
+
+    const inputValue = e.data ? +e.data : "не число";
+
+    // логика возврата курсора при вводе до positionStart
+    if (this.input.selectionEnd - 1 < this.positionStart) {
+      this.input.value = this.arrValueInputAndMask.join('');
+      this.setCursorPosition(this.positionStart);
+      return;
+    }
+
+    // ПРОВЕРКА НА ЧИСЛО
+    if (isNaN(inputValue)) {
+      this.input.value = this.arrValueInputAndMask.join('');
+      this.setCursorPosition(Math.max(this.positionStart, this.cursorPosition));
+      return;
+    }
+
+    //  ВВОД ЧИСЕЛ
+
+    if (inputValue >= 0 && inputValue <= 9) {
+      this.cursorPosition = this.input.selectionEnd;
+
+      // если курсор перепрыгивает символ
+      if (
+        this.arrNotReplaceSymbols.includes(this.arrValueInputAndMask[this.cursorPosition - 1]) ||
+        this.arrValueInputAndMask[this.cursorPosition - 1] === " "
+      ) {
+        this.arrValueInputAndMask[this.cursorPosition] = inputValue;
+        this.input.value = this.arrValueInputAndMask.join("");
+        this.cursorPosition++;
+        this.setCursorPosition(this.cursorPosition);
+      } else {
+        // если курсор не перепрыгивает символ
+        this.arrValueInputAndMask[this.cursorPosition - 1] = inputValue;
+        this.input.value = this.arrValueInputAndMask.join("");
+        this.setCursorPosition(this.cursorPosition);
+      }
+    }
+  }
 
 
-	input.addEventListener('focus', (e) => {
-		inputFocus = true;
-		if (!valueUser.length) {
-			e.target.value = mask;
-			setCursorPosition(input, positionStart)
-		}
-	})
-	input.addEventListener('blur', (e) => {
-		inputFocus = false;
-		if (!valueUser.length) {
-			e.target.value = '';
-		}
-	})
-	input.addEventListener('keydown', (e) => {
-		e.preventDefault()
-		const key = e.key;
-		if (key === 'Tab') return;
-		if (key === 'Delete' && cursorPosition < indexValue) {
-			if (cursorPosition < positionStart) {
-				cursorPosition = positionStart;
-				setCursorPosition(e.target, cursorPosition);
-				return;
-			}
-			if (arrSymbols.includes(valueArrMask[indexValue - 1])  || valueArrMask[indexValue - 1] === ' ') {
-				indexValue = decrementIndexValue(indexValue);
-			}
+  setCursorPosition = (position) => {
+    this.input.selectionStart = position;
+    this.input.selectionEnd = position;
 
-			indexValue = decrementIndexValue(indexValue);
-			valueArrMask = deleteNumberPhone(valueArrMask, indexValue, numberPlaceholderArr);
-			valueUser = deleteLastCharacter(valueUser);
-			e.target.value = valueArrMask.join('');
-			setCursorPosition(e.target, cursorPosition);
-			return;
-		}
-
-
-
-		if (key === 'ArrowRight') {
-			cursorPosition < lengthMask && cursorPosition++;
-			setCursorPosition(e.target, cursorPosition);
-		} if (key === 'ArrowLeft') {
-			cursorPosition > 0 && cursorPosition--;
-			setCursorPosition(e.target, cursorPosition);
-		}
-
-		if (key === 'Backspace' && indexValue > positionStart) {
-
-			if (arrSymbols.includes(valueArrMask[indexValue - 1]) || valueArrMask[indexValue - 1] === ' ') {
-				indexValue = decrementIndexValue(indexValue);
-				indexValue = decrementIndexValue(indexValue);
-				valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholderArr);
-				cursorPosition = indexValue;
-				setTimeout(() => {
-					e.target.value = valueArrMask.join('');
-					setCursorPosition(e.target, cursorPosition);
-				}, 0);
-		
-	
-				valueUser = deleteLastCharacter(valueUser);
-				return;
-			}
-			indexValue = decrementIndexValue(indexValue);
-			cursorPosition = indexValue;
-			valueArrMask = backspaceNumberPhone(valueArrMask, indexValue, numberPlaceholderArr);
-			valueUser = deleteLastCharacter(valueUser, numberPlaceholderArr);
-			e.target.value = valueArrMask.join('');
-			setCursorPosition(e.target, cursorPosition);
-			return;
-		}
-
-		if (indexValue === lengthMask) {
-			return;
-		}
-		if (e.code === 'Backspace' && e.target.selectionStart < positionStart) {
-			e.preventDefault();
-			setCursorPosition(e.target, positionStart)
-		}
-		if (key >= '0' && key <= '9') {
-			if (arrSymbols.includes(valueArrMask[indexValue]) || valueArrMask[indexValue] === ' ') {
-				indexValue = incrementIndex(indexValue);
-			}
-			valueUser += e.key;
-			valueArrMask[indexValue] = e.key;
-			indexValue = incrementIndex(indexValue);
-			cursorPosition = indexValue;
-			e.target.value = valueArrMask.join('');
-			setCursorPosition(e.target, cursorPosition);
-		}
-	});
-
-	input.addEventListener('click', (e) => {
-		if (e.target.selectionStart < positionStart || !valueUser) {
-			setCursorPosition(e.target, positionStart);
-			cursorPosition = e.target.selectionStart;
-			return
-		}
-		cursorPosition = e.target.selectionStart;
-	})
-
-
-	if (hover) {
-		input.addEventListener('mouseenter', (e) => {
-			if (!valueUser.length) {
-				e.target.value = mask;
-			}
-		});
-		input.addEventListener('mouseleave', (e) => {
-			if (!valueUser.length && !inputFocus) {
-				e.target.value = '';
-			}
-		});
-	}
-
-	function backspaceNumberPhone(arr, cursorPosition, numberPlaceholderArr) {
-		let maskArr = arr;
-		let arrUserData = maskArr.map((v, i, arr) => {
-			if (i === cursorPosition) {
-				arr[i] = numberPlaceholderArr[i];
-				return arr[i];
-			}
-			return v;
-		})
-		return arrUserData;
-	}
-	function deleteNumberPhone(arr, cursorPosition, numberPlaceholderArr) {
-		let maskArr = arr;
-		let arrUserData = maskArr.map((v, i, arr) => {
-			if (i >= cursorPosition && arr[i] !== ' ' && !arrSymbols.includes(arr[i])) {
-				return arr[i] = numberPlaceholderArr[i];;
-			}
-			return v;
-		})
-		return arrUserData;
-	}
-	function setCursorPosition(inputElement, cursorPosition) {
-		inputElement.selectionStart = inputElement.selectionEnd = cursorPosition;
-	}
-	function decrementIndexValue(index) {
-		return index - 1;
-	}
-	function incrementIndex(index) {
-		return index + 1;
-	}
-	function deleteLastCharacter(str) {
-		return str.slice(0, -1);
-	}
+  }
 }
-phoneNumberMask(3, '+7(***)___-__-__', [')','(','-'],  '.mask', true);//phoneNumberMask(стартовая позиция курсора,, маска,  массив не заменяемых символов, класс input к которому применяется маска,булево значение эффекта hover маски)
+
+
+const maskStart = 3;
+const maskValue = "+7(___)___-__-__";
+const maskSymbolsNotReplace = [")", "(", "-"];
+const input = document.getElementById("mask-tel");
+
+
+
+const mask = new InputMask(maskStart, maskValue, maskSymbolsNotReplace, input)
+mask.initMask();
+
